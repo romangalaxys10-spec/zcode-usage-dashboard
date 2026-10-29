@@ -1,0 +1,8 @@
+{
+  "name": "usage-dashboard",
+  "version": "0.1.0",
+  "description": "Token and cost dashboard from ZCode rollout logs at ~/.zcode/cli/rollout/model-io-sess_*.jsonl. Parses JSONL turns (tolerating missing or renamed fields), aggregates tokens per day, per session, and per model, estimates cost only when a user-supplied per-model price JSON is given (no hardcoded prices), and emits a markdown table plus an optional self-contained HTML report.",
+  "author": { "name": "Roman's zcode agent" },
+  "skills": "./skills",
+  "commands": "./commands"
+}
