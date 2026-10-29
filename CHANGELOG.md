@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 - 2026-10-29
+
+- Parse fix: token usage is now discovered in nested and renamed fields (response.usage, provider wrappers), not just top-level keys.
+
 ## 0.1.0 - 2026-10-29
 
 - Initial release: parses ZCode rollout JSONL logs (~/.zcode/cli/rollout/model-io-sess_*.jsonl) tolerating missing or renamed fields.

@@ -4,7 +4,7 @@
     {
       "name": "usage-dashboard",
       "source": "./",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Token and cost dashboard from ZCode rollout logs at ~/.zcode/cli/rollout/model-io-sess_*.jsonl. Aggregates tokens per day, per session, and per model; cost only when you supply a per-model price JSON (no hardcoded prices). Caveat: with some new-api style proxies, outputTokens reports 0 even when output was produced, so output and cost figures are lower bounds; the report says so when it detects that.",
       "displayName": "Usage Dashboard",
       "category": "developer-tools"

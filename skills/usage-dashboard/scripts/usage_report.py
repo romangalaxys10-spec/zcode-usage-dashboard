@@ -43,6 +43,32 @@ def pick(d, *names, default=0):
     return default
 
 
+def find_usage(o):
+    """Locate a token-usage dict in a turn, tolerating nesting and renames.
+
+    Checked in order: top-level usage/usageInfo/tokens, response.usage,
+    response.usageInfo, then any top-level dict value that contains a
+    tokens key (covers providerMetadata and other wrappers).
+    """
+    for key in ("usage", "usageInfo", "tokens"):
+        v = o.get(key)
+        if isinstance(v, dict):
+            return v
+    for nest_key in ("response", "request", "result", "data"):
+        v = o.get(nest_key)
+        if isinstance(v, dict):
+            for key in ("usage", "usageInfo", "tokens"):
+                inner = v.get(key)
+                if isinstance(inner, dict):
+                    return inner
+    for v in o.values():
+        if isinstance(v, dict) and any(k in v for k in (
+                "inputTokens", "input_tokens", "outputTokens",
+                "output_tokens", "promptTokens")):
+            return v
+    return {}
+
+
 def parse_turns(paths):
     """Yield (timestamp_str, session, model, in_tok, out_tok, cache_read, cache_write)."""
     turns = []
@@ -64,20 +90,29 @@ def parse_turns(paths):
                 if not isinstance(o, dict):
                     continue
                 ts = (o.get("timestamp") or o.get("ts") or o.get("time")
-                      or o.get("date") or o.get("createdAt") or "")
+                      or o.get("date") or o.get("createdAt")
+                      or o.get("startedAt") or o.get("completedAt") or "")
                 session = (o.get("sessionId") or o.get("session_id")
                            or o.get("session") or o.get("turnId") or "unknown")
                 model = o.get("model") or o.get("modelName") or o.get("model_id")
                 if isinstance(model, dict):
-                    model = model.get("modelId") or model.get("id") or "?"
+                    model = model.get("modelId") or model.get("id")
                 if not model:
                     m = o.get("m")
                     if isinstance(m, dict):
                         model = m.get("modelId") or m.get("id")
+                    for nest_key in ("request", "response"):
+                        v = o.get(nest_key)
+                        if isinstance(v, dict):
+                            cand = v.get("modelId") or v.get("model")
+                            if isinstance(cand, str):
+                                model = cand
+                            elif isinstance(cand, dict):
+                                model = cand.get("modelId") or cand.get("id")
+                            if model:
+                                break
                 model = model or "unknown"
-                usage = o.get("usage")
-                if not isinstance(usage, dict):
-                    usage = o.get("usageInfo") or o.get("tokens") or {}
+                usage = find_usage(o)
                 tin = pick(usage, "inputTokens", "input_tokens", "promptTokens",
                            "prompt_tokens", "input")
                 tout = pick(usage, "outputTokens", "output_tokens",
